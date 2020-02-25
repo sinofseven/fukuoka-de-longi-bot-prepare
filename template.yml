@@ -2,11 +2,20 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: lambda-runtime-tweeter-prepare
 
+Parameters:
+  SAMDeployUserName:
+    Type: String
+    Default: fukuoka-de-longi-bot-sam-deploy-user
+
+  SSMDeployUserName:
+    Type: String
+    Default: fukuoka-de-longi-bot-ssm-deploy-user
+
 Resources:
   SAMDeployUser:
     Type: AWS::IAM::User
     Properties:
-      UserName: sam-deploy-user
+      UserName: !Ref SAMDeployUserName
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonS3FullAccess
       Policies:
@@ -24,7 +33,7 @@ Resources:
   SSMDeployUser:
     Type: AWS::IAM::User
     Properties:
-      UserName: ssm-deploy-user
+      UserName: !Ref SSMDeployUserName
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonSSMFullAccess
       Policies:

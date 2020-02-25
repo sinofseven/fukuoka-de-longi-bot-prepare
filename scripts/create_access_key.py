@@ -1,18 +1,17 @@
 import sys
 from typing import List, Tuple
+from configparser import ConfigParser
 
 import boto3
 from botocore.client import BaseClient
 from prompt_toolkit.shortcuts import confirm
 
-SAM_DEPLOY_USER = "sam-deploy-user"
-SSM_DEPLOY_USER = "ssm-deploy-user"
-
 
 def main():
     iam = boto3.client("iam")
+    cfn = boto3.client("cloudformation")
 
-    username = get_username()
+    username = get_username(cfn)
     print(f"\nusername: {username}")
     key_names = get_access_key_names(username, iam)
     if len(key_names) > 0:
@@ -25,11 +24,17 @@ def main():
     print(f"SecretAccessKey: {secret_key}")
 
 
-def get_username() -> str:
+def get_username(cfn) -> str:
     args = sys.argv
-    if len(args) < 2:
-        return SAM_DEPLOY_USER
-    return SSM_DEPLOY_USER if args[1] == "SSM" else SAM_DEPLOY_USER
+    stack_name = args[1]
+    logical_id = args[2]
+    option = {
+        'StackName': stack_name,
+        'LogicalResourceId': logical_id
+    }
+    resp = cfn.describe_stack_resource(**option)
+    return resp['StackResourceDetail']['PhysicalResourceId']
+
 
 
 def get_access_key_names(username: str, iam: BaseClient) -> List[str]:
